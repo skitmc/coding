@@ -3,32 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevLabs: Interactive Learning</title>
+    <title>DevLabs: Interactive Coding Learning</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="main-container">
-        <aside class="sidebar">
-            <h2>Challenges</h2>
-            <div id="challenge-list"></div>
-            <div class="stats">
-                Score: <span id="score">0</span>
-            </div>
-        </aside>
+    <nav class="navbar">
+        <h1>DevLabs</h1>
+        <ul>
+            <li><a href="#" id="nav-home">Home</a></li>
+            <li><a href="#" id="nav-study">Study Guides</a></li>
+            <li><a href="#" id="nav-challenges">Challenges</a></li>
+            <li><a href="#" id="nav-quizzes">Quizzes</a></li>
+        </ul>
+    </nav>
 
-        <main class="editor-section">
-            <div class="header">
-                <h3 id="current-task">Select a challenge to start!</h3>
-                <button id="run-btn">Run Code</button>
-            </div>
-            <textarea id="code-editor" spellcheck="false" placeholder="Write your HTML here..."></textarea>
-        </main>
+    <div id="home-section" class="section active">
+        <div class="hero">
+            <h2>Welcome to DevLabs</h2>
+            <p>Master HTML and JavaScript through interactive learning, challenges, and quizzes.</p>
+            <button id="start-learning">Start Learning</button>
+        </div>
+    </div>
 
-        <section class="preview-section">
-            <div class="header"><h3>Live Preview</h3></div>
-            <iframe id="preview-window"></iframe>
-        </section>
+    <div id="study-section" class="section">
+        <div class="sidebar">
+            <h2>Topics</h2>
+            <ul id="study-topics">
+                <li><a href="#" data-topic="html-basics">HTML Basics</a></li>
+                <li><a href="#" data-topic="html-elements">HTML Elements</a></li>
+                <li><a href="#" data-topic="css-intro">CSS Introduction</a></li>
+                <li><a href="#" data-topic="js-basics">JavaScript Basics</a></li>
+                <li><a href="#" data-topic="js-functions">JavaScript Functions</a></li>
+                <li><a href="#" data-topic="js-dom">DOM Manipulation</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <div id="study-content">
+                <h2>Select a topic to learn</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="challenges-section" class="section">
+        <div class="main-container">
+            <aside class="sidebar">
+                <h2>Challenges</h2>
+                <div id="challenge-list"></div>
+                <div class="stats">
+                    Score: <span id="score">0</span>
+                </div>
+            </aside>
+
+            <main class="editor-section">
+                <div class="header">
+                    <h3 id="current-task">Select a challenge to start!</h3>
+                    <div>
+                        <button id="hint-btn">Hint</button>
+                        <button id="run-btn">Run Code</button>
+                    </div>
+                </div>
+                <textarea id="code-editor" spellcheck="false" placeholder="Write your code here..."></textarea>
+                <div id="error-output"></div>
+            </main>
+
+            <section class="preview-section">
+                <div class="header"><h3>Output</h3></div>
+                <div id="output-window"></div>
+            </section>
+        </div>
+    </div>
+
+    <div id="quizzes-section" class="section">
+        <div class="quiz-container">
+            <h2>Quizzes</h2>
+            <div id="quiz-content">
+                <p>Select a quiz to start.</p>
+                <button id="html-quiz-btn">HTML Quiz</button>
+                <button id="js-quiz-btn">JavaScript Quiz</button>
+            </div>
+            <div id="quiz-questions" style="display: none;">
+                <div id="question-display"></div>
+                <div id="options"></div>
+                <button id="next-btn">Next</button>
+                <div id="quiz-result"></div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
