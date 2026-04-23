@@ -3,90 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevLabs: Interactive Coding Learning</title>
+    <title>DevLabs | Home</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <nav class="navbar">
-        <h1>DevLabs</h1>
-        <ul>
-            <li><a href="#" id="nav-home">Home</a></li>
-            <li><a href="#" id="nav-study">Study Guides</a></li>
-            <li><a href="#" id="nav-challenges">Challenges</a></li>
-            <li><a href="#" id="nav-quizzes">Quizzes</a></li>
-        </ul>
+        <a href="index.html" class="logo-link"><h1>DevLabs</h1></a>
     </nav>
 
-    <div id="home-section" class="section active">
+    <div class="hub-container">
         <div class="hero">
             <h2>Welcome to DevLabs</h2>
             <p>Master HTML and JavaScript through interactive learning, challenges, and quizzes.</p>
-            <button id="start-learning">Start Learning</button>
         </div>
-    </div>
 
-    <div id="study-section" class="section">
-        <div class="sidebar">
-            <h2>Topics</h2>
-            <ul id="study-topics">
-                <li><a href="#" data-topic="html-basics">HTML Basics</a></li>
-                <li><a href="#" data-topic="html-elements">HTML Elements</a></li>
-                <li><a href="#" data-topic="css-intro">CSS Introduction</a></li>
-                <li><a href="#" data-topic="js-basics">JavaScript Basics</a></li>
-                <li><a href="#" data-topic="js-functions">JavaScript Functions</a></li>
-                <li><a href="#" data-topic="js-dom">DOM Manipulation</a></li>
-            </ul>
-        </div>
-        <div class="content">
-            <div id="study-content">
-                <h2>Select a topic to learn</h2>
+        <div class="hub-sections">
+            <div class="hub-card" onclick="window.location.href='study.html'">
+                <h3>📚 Study Guides</h3>
+                <p>Learn HTML, CSS, and JavaScript fundamentals with comprehensive guides and examples.</p>
+                <div class="card-button">Start Learning</div>
             </div>
-        </div>
-    </div>
 
-    <div id="challenges-section" class="section">
-        <div class="main-container">
-            <aside class="sidebar">
-                <h2>Challenges</h2>
-                <div id="challenge-list"></div>
-                <div class="stats">
-                    Score: <span id="score">0</span>
-                </div>
-            </aside>
-
-            <main class="editor-section">
-                <div class="header">
-                    <h3 id="current-task">Select a challenge to start!</h3>
-                    <div>
-                        <button id="hint-btn">Hint</button>
-                        <button id="run-btn">Run Code</button>
-                    </div>
-                </div>
-                <textarea id="code-editor" spellcheck="false" placeholder="Write your code here..."></textarea>
-                <div id="error-output"></div>
-            </main>
-
-            <section class="preview-section">
-                <div class="header"><h3>Output</h3></div>
-                <div id="output-window"></div>
-            </section>
-        </div>
-    </div>
-
-    <div id="quizzes-section" class="section">
-        <div class="quiz-container">
-            <h2>Quizzes</h2>
-            <div id="quiz-content">
-                <p>Select a quiz to start.</p>
-                <button id="html-quiz-btn">HTML Quiz</button>
-                <button id="js-quiz-btn">JavaScript Quiz</button>
+            <div class="hub-card" onclick="window.location.href='challenges.html'">
+                <h3>💻 Coding Challenges</h3>
+                <p>Practice your skills with interactive coding challenges and real-time feedback.</p>
+                <div class="card-button">Try Challenges</div>
             </div>
-            <div id="quiz-questions" style="display: none;">
-                <div id="question-display"></div>
-                <div id="options"></div>
-                <button id="next-btn">Next</button>
-                <div id="quiz-result"></div>
+
+            <div class="hub-card" onclick="window.location.href='quizzes.html'">
+                <h3>🎯 Code Quizzes</h3>
+                <p>Test your knowledge with interactive code-writing quizzes.</p>
+                <div class="card-button">Take Quiz</div>
+            </div>
+
+            <div class="hub-card" onclick="window.location.href='practice.html'">
+                <h3>🛠️ Practice Lab</h3>
+                <p>Experiment with code in a live environment with instant preview and execution.</p>
+                <div class="card-button">Open Lab</div>
             </div>
         </div>
     </div>

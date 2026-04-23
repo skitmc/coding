@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLabs | Practice Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo-link"><h1>DevLabs</h1></a>
+        <a href="index.html" class="back-btn">← Back to Hub</a>
+    </nav>
+
+    <div class="practice-lab">
+        <div class="practice-header">
+            <h1>🛠️ Practice Lab</h1>
+            <p>Write, run, and experiment with code in real-time</p>
+        </div>
+
+        <div class="practice-controls">
+            <div class="control-group">
+                <label for="language-select">Language:</label>
+                <select id="language-select">
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="sql">SQL</option>
+                </select>
+            </div>
+            <div class="control-buttons">
+                <button id="run-btn" class="practice-btn primary">▶ Run Code</button>
+                <button id="clear-btn" class="practice-btn secondary">Clear</button>
+                <button id="reset-btn" class="practice-btn secondary">Reset</button>
+            </div>
+        </div>
+
+        <div class="practice-workspace">
+            <div class="code-section">
+                <div class="section-header">
+                    <h3>Code Editor</h3>
+                    <div class="code-stats">
+                        <span id="line-count">Lines: 1</span>
+                        <span id="char-count">Characters: 0</span>
+                    </div>
+                </div>
+                <div class="code-editor-container">
+                    <div class="line-numbers" id="line-numbers">1</div>
+                    <textarea id="code-editor" spellcheck="false" placeholder="Start coding here..."></textarea>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="section-header">
+                    <h3>Live Output</h3>
+                    <div class="output-tabs">
+                        <button class="output-tab active" data-tab="preview">👁️ Preview</button>
+                        <button class="output-tab" data-tab="console">📋 Console</button>
+                    </div>
+                </div>
+                <div class="output-container">
+                    <div id="preview-output" class="output-panel active">
+                        <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
+                    </div>
+                    <div id="console-output" class="output-panel">
+                        <div class="console-content" id="console-content">
+                            <div class="console-welcome">Ready to run code! Output will appear here.</div>
+                        </div>
+                        <button id="clear-console" class="clear-console-btn">🗑️ Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Practice Lab - Just code and run
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('language-select');
+            const codeEditor = document.getElementById('code-editor');
+            const runBtn = document.getElementById('run-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const clearConsoleBtn = document.getElementById('clear-console');
+            const previewFrame = document.getElementById('preview-frame');
+            const consoleContent = document.getElementById('console-content');
+            const outputTabs = document.querySelectorAll('.output-tab');
+            const outputPanels = document.querySelectorAll('.output-panel');
+
+            let currentLanguage = 'html';
+
+            // Language selection
+            languageSelect.addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                updatePlaceholder();
+                runCode();
+            });
+
+            // Run code
+            runBtn.addEventListener('click', runCode);
+
+            // Clear editor
+            clearBtn.addEventListener('click', () => {
+                codeEditor.value = '';
+                updateStats();
+                runCode();
+            });
+
+            // Reset to default
+            resetBtn.addEventListener('click', () => {
+                setDefaultCode();
+                runCode();
+            });
+
+            // Clear console
+            clearConsoleBtn.addEventListener('click', () => {
+                consoleContent.innerHTML = '<div class="console-welcome">Console cleared.</div>';
+            });
+
+            // Output tabs
+            outputTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    outputTabs.forEach(t => t.classList.remove('active'));
+                    outputPanels.forEach(p => p.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const targetPanel = document.getElementById(tab.dataset.tab + '-output');
+                    targetPanel.classList.add('active');
+                });
+            });
+
+            // Update stats on input
+            codeEditor.addEventListener('input', () => {
+                updateLineNumbers();
+                updateStats();
+            });
+
+            // Auto-run on keyup (debounced)
+            let timeout;
+            codeEditor.addEventListener('keyup', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(runCode, 800);
+            });
+
+            // Listen for console messages from iframe
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'console-log') {
+                    const logElement = document.createElement('div');
+                    logElement.className = 'console-log';
+                    logElement.textContent = '> ' + event.data.data;
+                    consoleContent.appendChild(logElement);
+                    consoleContent.scrollTop = consoleContent.scrollHeight;
+                }
+            });
+
+            // Initialize
+            setDefaultCode();
+            updateStats();
+            updateLineNumbers();
+
+            function updatePlaceholder() {
+                const placeholders = {
+                    html: `<!DOCTYPE html>
+<html>
+<head>
+    <title>My Experiment</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .box { width: 100px; height: 100px; background: #007acc; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <div class="box"></div>
+    <p>Edit this HTML and watch it update live!</p>
+
+    <script>
+        console.log("Page loaded!");
+    </script>
+</body>
+</html>`,
+                    css: `/* CSS Playground */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.title {
+    font-size: 2rem;
+    color: #00d4ff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.button {
+    background: linear-gradient(45deg, #00d4ff, #667eea);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+}`,
+                    javascript: `// JavaScript Playground
+// Write any JavaScript code here!
+
+console.log("Hello from JavaScript!");
+console.log("Current time:", new Date().toLocaleTimeString());
+
+// Variables
+let name = "Coder";
+let age = 25;
+let skills = ["HTML", "CSS", "JS"];
+
+console.log(\`Hi, I'm \${name} and I'm \${age} years old\`);
+console.log("My skills:", skills.join(", "));
+
+// Functions
+function greet(person) {
+    return \`Hello, \${person}! Welcome to coding!\`;
+}
+
+function calculate(x, y) {
+    return {
+        sum: x + y,
+        difference: x - y,
+        product: x * y,
+        quotient: x / y
+    };
+}
+
+console.log(greet("World"));
+console.log("Math results:", calculate(10, 5));
+
+// Arrays and Objects
+let projects = [
+    { name: "Todo App", status: "completed" },
+    { name: "Weather App", status: "in progress" },
+    { name: "Blog", status: "planning" }
+];
+
+projects.forEach(project => {
+    console.log(\`\${project.name}: \${project.status}\`);
+});
+
+// Try editing this code and see the console output update!`,
+                    python: `# Python Playground
+# This simulates Python execution in the browser
+
+print("Hello from Python!")
+print("This is simulated Python execution")
+print(f"Current date: {2024}")
+
+# Variables
+name = "Python Developer"
+version = 3.9
+is_fun = True
+
+print(f"Hi, I'm {name}")
+print(f"Python version: {version}")
+print(f"Is Python fun? {is_fun}")
+
+# Lists
+languages = ["Python", "JavaScript", "HTML", "CSS"]
+numbers = [1, 2, 3, 4, 5]
+
+print("Languages I know:", languages)
+print("Numbers:", numbers)
+
+# Functions
+def greet_user(username):
+    return f"Welcome, {username}!"
+
+def square(number):
+    return number ** 2
+
+print(greet_user("Coder"))
+print(f"5 squared is: {square(5)}")
+
+# Dictionaries
+user = {
+    "name": "Sam",
+    "age": 30,
+    "city": "New York"
+}
+
+print("User info:")
+for key, value in user.items():
+    print(f"  {key}: {value}")
+
+# Note: This is simulated Python - real execution requires a Python server`,
+                    sql: `-- SQL Playground
+-- This simulates SQL execution
+
+-- Create a table
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    age INTEGER,
+    created_date DATE DEFAULT CURRENT_DATE
+);
+
+-- Insert some data
+INSERT INTO users (name, email, age) VALUES
+('Alice Johnson', 'alice@email.com', 28),
+('Bob Smith', 'bob@email.com', 32),
+('Carol Davis', 'carol@email.com', 25);
+
+-- Select all users
+SELECT * FROM users;
+
+-- Filter users
+SELECT name, age FROM users WHERE age > 26;
+
+-- Count users
+SELECT COUNT(*) as total_users FROM users;
+
+-- Group by age
+SELECT age, COUNT(*) as count FROM users GROUP BY age;
+
+-- Update a user
+UPDATE users SET age = 29 WHERE name = 'Alice Johnson';
+
+-- Note: This is simulated SQL - real execution requires a database`
+                };
+
+                codeEditor.placeholder = placeholders[currentLanguage] || 'Start coding...';
+            }
+
+            function setDefaultCode() {
+                const defaultCodes = {
+                    html: `<!DOCTYPE html>
+<html>
+<head>
+    <title>Practice Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+        }
+        h1 { color: #00d4ff; text-align: center; }
+        .box {
+            width: 100px;
+            height: 100px;
+            background: #00d4ff;
+            margin: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Welcome!</h1>
+        <p>Edit this HTML and watch it update live!</p>
+        <div class="box"></div>
+        <button onclick="alert('Hello!')">Click me!</button>
+    </div>
+
+    <script>
+        console.log("Page loaded successfully!");
+        console.log("Try editing the code above!");
+    </script>
+</body>
+</html>`,
+                    css: `/* Edit this CSS and see it applied to the HTML above */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #00d4ff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.box {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(45deg, #00d4ff, #667eea);
+    margin: 20px auto;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+button {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 10px;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}`,
+                    javascript: `// JavaScript - Write any code you want!
+
+console.log("🚀 JavaScript Practice Lab");
+console.log("Edit this code and see results instantly!");
+
+// Basic examples
+let message = "Hello, DevLabs!";
+let number = 42;
+let isAwesome = true;
+
+console.log(message);
+console.log("The answer is:", number);
+console.log("Is coding awesome?", isAwesome);
+
+// Arrays
+let colors = ["red", "blue", "green", "yellow"];
+let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+console.log("Colors:", colors);
+console.log("Numbers:", numbers);
+
+// Functions
+function sayHello(name) {
+    return \`Hello, \${name}! Welcome to coding!\`;
+}
+
+function calculateArea(width, height) {
+    return width * height;
+}
+
+console.log(sayHello("World"));
+console.log("Area of 10x5 rectangle:", calculateArea(10, 5));
+
+// Objects
+let person = {
+    name: "Alex",
+    age: 25,
+    hobbies: ["coding", "gaming", "music"],
+    greet: function() {
+        console.log(\`Hi! I'm \${this.name} and I'm \${this.age} years old.\`);
+    }
+};
+
+person.greet();
+console.log("Hobbies:", person.hobbies.join(", "));
+
+// Try your own code below!
+// console.log("Your code here!");`,
+                    python: `# Python Practice - Experiment freely!
+
+print("🐍 Python Practice Lab")
+print("This simulates Python execution")
+print(f"Current year: {2024}")
+
+# Variables
+name = "Python Coder"
+age = 25
+languages = ["Python", "JavaScript", "SQL"]
+
+print(f"Hello, {name}!")
+print(f"You are {age} years old")
+print("Languages:", languages)
+
+# Functions
+def greet(person):
+    return f"Welcome, {person}!"
+
+def square(number):
+    return number ** 2
+
+print(greet("Developer"))
+print(f"5 squared is: {square(5)}")
+
+# Lists and loops
+numbers = [1, 2, 3, 4, 5]
+squares = []
+
+for num in numbers:
+    squares.append(square(num))
+
+print("Original numbers:", numbers)
+print("Squared numbers:", squares)
+
+# List comprehension
+cubes = [x**3 for x in range(1, 6)]
+print("Cubes:", cubes)
+
+# Dictionaries
+student = {
+    "name": "Sam",
+    "age": 30,
+    "city": "New York"
+}
+
+print("Student info:")
+for key, value in student.items():
+    print(f"  {key}: {value}")
+
+# Your experiments below!
+# print("Add your Python code here!")`,
+                    sql: `-- SQL Practice - Database queries
+
+-- Create tables
+CREATE TABLE students (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    age INTEGER,
+    major TEXT,
+    gpa REAL
+);
+
+-- Insert sample data
+INSERT INTO students (name, age, major, gpa)
+VALUES ('Alice', 20, 'Computer Science', 3.8);
+
+INSERT INTO students (name, age, major, gpa)
+VALUES ('Bob', 22, 'Mathematics', 3.6);
+
+INSERT INTO students (name, age, major, gpa)
+VALUES ('Carol', 21, 'Physics', 3.9);
+
+-- Select all students
+SELECT * FROM students;
+
+-- Filter results
+SELECT name, gpa FROM students WHERE gpa > 3.7;
+
+-- Count users
+SELECT COUNT(*) as total_students FROM students;
+
+-- Group by major
+SELECT major, COUNT(*) as student_count, AVG(gpa) as avg_gpa
+FROM students
+GROUP BY major;
+
+-- Your SQL experiments below!
+-- SELECT * FROM courses;`
+                };
+
+                codeEditor.value = defaultCodes[currentLanguage] || '';
+            }
+
+            function runCode() {
+                const code = codeEditor.value.trim();
+
+                // Clear console for new run
+                consoleContent.innerHTML = '';
+
+                try {
+                    if (currentLanguage === 'html') {
+                        // HTML Preview - ensure proper HTML structure
+                        let htmlCode = code.trim();
+
+                        // If it's just HTML fragments, wrap in proper HTML structure
+                        if (!htmlCode.toLowerCase().includes('<html') && !htmlCode.toLowerCase().includes('<!doctype')) {
+                            htmlCode = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    ${htmlCode}
+</body>
+</html>`;
+                        }
+
+                        // Inject console capture into scripts
+                        const enhancedCode = htmlCode.replace(
+                            /<script>/gi,
+                            '<script>\n// Console capture\n(function() {\n    var originalLog = console.log;\n    var logs = [];\n    console.log = function() {\n        logs.push(Array.prototype.join.call(arguments, \' \'));\n        originalLog.apply(console, arguments);\n        \n        // Send logs to parent\n        window.parent.postMessage({\n            type: \'console-log\',\n            data: Array.prototype.join.call(arguments, \' \')\n        }, \'*\');\n    };\n})();\n'
+                        );
+
+                        const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                        frameDoc.open();
+                        frameDoc.write(enhancedCode);
+                        frameDoc.close();
+
+                    } else if (currentLanguage === 'css') {
+                        // CSS - apply to a basic HTML structure
+                        const htmlTemplate = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    margin: 0;
+                                    padding: 20px;
+                                    background: #f5f5f5;
+                                }
+                                .css-preview {
+                                    max-width: 800px;
+                                    margin: 0 auto;
+                                    background: white;
+                                    padding: 30px;
+                                    border-radius: 10px;
+                                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                                }
+                                ${code}
+                                </style>
+                            </head>
+                            <body>
+                                <div class="css-preview">
+                                    <h1>CSS Preview</h1>
+                                    <p>Your CSS styles are applied below!</p>
+                                    <div class="sample-content">
+                                        <h2>Sample Heading</h2>
+                                        <p>This is sample content to see your CSS in action.</p>
+                                        <button class="sample-button">Sample Button</button>
+                                        <div class="sample-box">Sample Box</div>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>
+                        `;
+
+                        const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                        frameDoc.open();
+                        frameDoc.write(htmlTemplate);
+                        frameDoc.close();
+
+                    } else if (currentLanguage === 'javascript') {
+                        // JavaScript execution with better error handling
+                        if (!code) {
+                            const infoElement = document.createElement('div');
+                            infoElement.className = 'console-info';
+                            infoElement.textContent = 'Enter JavaScript code to execute';
+                            consoleContent.appendChild(infoElement);
+                            return;
+                        }
+
+                        let logs = [];
+                        const originalLog = console.log;
+                        const originalError = console.error;
+
+                        console.log = (...args) => {
+                            const message = args.join(' ');
+                            logs.push(message);
+                            const logElement = document.createElement('div');
+                            logElement.className = 'console-log';
+                            logElement.textContent = '> ' + message;
+                            consoleContent.appendChild(logElement);
+                            consoleContent.scrollTop = consoleContent.scrollHeight;
+                        };
+
+                        console.error = (...args) => {
+                            const message = args.join(' ');
+                            logs.push('ERROR: ' + message);
+                            const errorElement = document.createElement('div');
+                            errorElement.className = 'console-error';
+                            errorElement.textContent = '❌ ' + message;
+                            consoleContent.appendChild(errorElement);
+                            consoleContent.scrollTop = consoleContent.scrollHeight;
+                        };
+
+                        try {
+                            const result = eval(code);
+
+                            // Restore original console methods
+                            console.log = originalLog;
+                            console.error = originalError;
+
+                            if (result !== undefined) {
+                                const resultElement = document.createElement('div');
+                                resultElement.className = 'console-result';
+                                resultElement.textContent = '→ Result: ' + result;
+                                consoleContent.appendChild(resultElement);
+                            }
+
+                            if (logs.length === 0 && result === undefined) {
+                                const infoElement = document.createElement('div');
+                                infoElement.className = 'console-info';
+                                infoElement.textContent = '✓ Code executed successfully!';
+                                consoleContent.appendChild(infoElement);
+                            }
+                        } catch (error) {
+                            console.log = originalLog;
+                            console.error = originalError;
+
+                            const errorElement = document.createElement('div');
+                            errorElement.className = 'console-error';
+                            errorElement.textContent = '❌ Error: ' + error.message;
+                            consoleContent.appendChild(errorElement);
+                        }
+
+                    } else if (currentLanguage === 'python') {
+                        // Python simulation
+                        if (!code) {
+                            const infoElement = document.createElement('div');
+                            infoElement.className = 'console-info';
+                            infoElement.textContent = 'Enter Python code to simulate';
+                            consoleContent.appendChild(infoElement);
+                            return;
+                        }
+
+                        const logElement = document.createElement('div');
+                        logElement.className = 'console-log';
+                        logElement.textContent = '> Python execution simulated';
+                        consoleContent.appendChild(logElement);
+
+                        const infoElement = document.createElement('div');
+                        infoElement.className = 'console-info';
+                        infoElement.textContent = 'ℹ️ Real Python execution requires a server environment';
+                        consoleContent.appendChild(infoElement);
+
+                    } else if (currentLanguage === 'sql') {
+                        // SQL simulation
+                        if (!code) {
+                            const infoElement = document.createElement('div');
+                            infoElement.className = 'console-info';
+                            infoElement.textContent = 'Enter SQL query to simulate';
+                            consoleContent.appendChild(infoElement);
+                            return;
+                        }
+
+                        const logElement = document.createElement('div');
+                        logElement.className = 'console-log';
+                        logElement.textContent = '> SQL query simulated';
+                        consoleContent.appendChild(logElement);
+
+                        const infoElement = document.createElement('div');
+                        infoElement.className = 'console-info';
+                        infoElement.textContent = 'ℹ️ Real SQL execution requires a database connection';
+                        consoleContent.appendChild(infoElement);
+                    }
+
+                } catch (error) {
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'console-error';
+                    errorElement.textContent = '❌ Execution Error: ' + error.message;
+                    consoleContent.appendChild(errorElement);
+                }
+            }
+
+            function updateStats() {
+                const code = codeEditor.value;
+                const lines = code.split('\n').length;
+                const chars = code.length;
+
+                document.getElementById('line-count').textContent = \`Lines: \${lines}\`;
+                document.getElementById('char-count').textContent = \`Characters: \${chars}\`;
+            }
+
+            function updateLineNumbers() {
+                const code = codeEditor.value;
+                const lines = code.split('\n');
+                let lineNumbersHTML = '';
+
+                for (let i = 1; i <= lines.length; i++) {
+                    lineNumbersHTML += i + '\n';
+                }
+
+                document.getElementById('line-numbers').textContent = lineNumbersHTML;
+            }
+        });
+    </script>
+
+</body>
+</html>

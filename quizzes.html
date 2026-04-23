@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLabs | Code Quizzes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo-link"><h1>DevLabs</h1></a>
+    </nav>
+
+    <div class="quiz-container">
+        <h2>Code Writing Quizzes</h2>
+        <p>Write code to solve the challenges below!</p>
+
+        <div id="quiz-selection">
+            <button id="html-quiz-btn" class="quiz-select-btn">HTML Quiz</button>
+            <button id="js-quiz-btn" class="quiz-select-btn">JavaScript Quiz</button>
+        </div>
+
+        <div id="code-quiz" style="display: none;">
+            <div id="quiz-instruction"></div>
+            <textarea id="code-editor" placeholder="Write your code here..."></textarea>
+            <div id="code-output"></div>
+            <div id="code-error"></div>
+            <button id="run-code-btn">Run Code</button>
+            <button id="check-solution-btn">Check Solution</button>
+            <button id="hint-btn">Get Hint</button>
+            <button id="next-challenge-btn" style="display: none;">Next Challenge</button>
+        </div>
+    </div>
+
+    <script>
+        // Code writing quiz data
+        const codeQuizzes = {
+            html: [
+                {
+                    instruction: "Create an HTML page with an h1 heading that says 'Hello World'",
+                    hint: "Use &lt;h1&gt;Hello World&lt;/h1&gt;",
+                    solution: (code) => code.includes('<h1>') && code.includes('Hello World') && code.includes('</h1>')
+                },
+                {
+                    instruction: "Create a paragraph with the text 'This is a paragraph'",
+                    hint: "Use &lt;p&gt;This is a paragraph&lt;/p&gt;",
+                    solution: (code) => code.includes('<p>') && code.includes('This is a paragraph') && code.includes('</p>')
+                },
+                {
+                    instruction: "Create an unordered list with three items: Apple, Banana, Cherry",
+                    hint: "Use &lt;ul&gt; and &lt;li&gt; tags",
+                    solution: (code) => code.includes('<ul>') && code.includes('<li>') && code.includes('Apple') && code.includes('Banana') && code.includes('Cherry')
+                },
+                {
+                    instruction: "Create a hyperlink that says 'Click me' and links to 'https://example.com'",
+                    hint: "Use &lt;a href='https://example.com'&gt;Click me&lt;/a&gt;",
+                    solution: (code) => code.includes('<a href=') && code.includes('https://example.com') && code.includes('Click me')
+                },
+                {
+                    instruction: "Create an image tag with alt text 'A beautiful landscape'",
+                    hint: "Use &lt;img src='image.jpg' alt='A beautiful landscape'&gt;",
+                    solution: (code) => code.includes('<img') && code.includes('alt=') && code.includes('A beautiful landscape')
+                }
+            ],
+            js: [
+                {
+                    instruction: "Write code that declares a variable 'name' with value 'John' and displays it",
+                    hint: "Use let name = 'John'; console.log(name);",
+                    solution: (code) => (code.includes("let name = 'John'") || code.includes('let name = "John"')) && code.includes('console.log(name)')
+                },
+                {
+                    instruction: "Create a function called 'greet' that returns 'Hello!'",
+                    hint: "function greet() { return 'Hello!'; }",
+                    solution: (code) => code.includes('function greet') && code.includes('return') && (code.includes("'Hello!'") || code.includes('"Hello!"'))
+                },
+                {
+                    instruction: "Create an array called 'numbers' with values [1, 2, 3, 4, 5]",
+                    hint: "let numbers = [1, 2, 3, 4, 5];",
+                    solution: (code) => code.includes('let numbers = [1, 2, 3, 4, 5]')
+                },
+                {
+                    instruction: "Write an if statement that checks if x is greater than 10 and logs 'Big number'",
+                    hint: "if (x > 10) { console.log('Big number'); }",
+                    solution: (code) => code.includes('if') && code.includes('x > 10') && code.includes('console.log') && code.includes('Big number')
+                },
+                {
+                    instruction: "Create a for loop that logs numbers from 0 to 4",
+                    hint: "for (let i = 0; i < 5; i++) { console.log(i); }",
+                    solution: (code) => code.includes('for') && code.includes('let i = 0') && code.includes('i < 5') && code.includes('console.log(i)')
+                }
+            ]
+        };
+
+        let currentQuizType = null;
+        let currentChallengeIndex = 0;
+        let score = 0;
+
+        // Quiz functions
+        function startCodeQuiz(type) {
+            currentQuizType = type;
+            currentChallengeIndex = 0;
+            score = 0;
+            document.getElementById('quiz-selection').style.display = 'none';
+            document.getElementById('code-quiz').style.display = 'block';
+            loadChallenge();
+        }
+
+        function loadChallenge() {
+            const challenge = codeQuizzes[currentQuizType][currentChallengeIndex];
+            document.getElementById('quiz-instruction').innerText = challenge.instruction;
+            document.getElementById('code-editor').value = '';
+            document.getElementById('code-output').innerHTML = '';
+            document.getElementById('code-error').innerHTML = '';
+            document.getElementById('next-challenge-btn').style.display = 'none';
+        }
+
+        // Initialize quiz
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('html-quiz-btn').addEventListener('click', () => startCodeQuiz('html'));
+            document.getElementById('js-quiz-btn').addEventListener('click', () => startCodeQuiz('js'));
+
+            // Run code button
+            document.getElementById('run-code-btn').addEventListener('click', () => {
+                const code = document.getElementById('code-editor').value;
+                const challenge = codeQuizzes[currentQuizType][currentChallengeIndex];
+
+                document.getElementById('code-output').innerHTML = '';
+                document.getElementById('code-error').innerHTML = '';
+
+                if (currentQuizType === 'html') {
+                    // For HTML, display rendered result
+                    document.getElementById('code-output').innerHTML = `<div style="border: 1px solid #333; padding: 10px; background: white; color: black;">${code}</div>`;
+                } else if (currentQuizType === 'js') {
+                    // For JS, execute and show output
+                    try {
+                        let logs = [];
+                        const originalLog = console.log;
+                        console.log = (...args) => {
+                            logs.push(args.join(' '));
+                            originalLog(...args);
+                        };
+
+                        const result = eval(code);
+                        console.log = originalLog;
+
+                        if (logs.length > 0) {
+                            document.getElementById('code-output').innerHTML = logs.join('<br>');
+                        } else {
+                            document.getElementById('code-output').innerHTML = '✅ Code executed successfully!';
+                            if (result !== undefined) {
+                                document.getElementById('code-output').innerHTML += `<br>Result: ${result}`;
+                            }
+                        }
+                    } catch (error) {
+                        document.getElementById('code-error').innerHTML = `❌ Error: ${error.message}`;
+                    }
+                }
+            });
+
+            // Check solution button
+            document.getElementById('check-solution-btn').addEventListener('click', () => {
+                const code = document.getElementById('code-editor').value;
+                const challenge = codeQuizzes[currentQuizType][currentChallengeIndex];
+
+                if (challenge.solution(code)) {
+                    document.getElementById('code-output').innerHTML += '<br><br>✅ Correct! Well done!';
+                    document.getElementById('next-challenge-btn').style.display = 'block';
+                    score++;
+                } else {
+                    document.getElementById('code-error').innerHTML += '<br>❌ Not quite right. Try again or get a hint!';
+                }
+            });
+
+            // Hint button
+            document.getElementById('hint-btn').addEventListener('click', () => {
+                const challenge = codeQuizzes[currentQuizType][currentChallengeIndex];
+                alert(`Hint: ${challenge.hint}`);
+            });
+
+            // Next challenge button
+            document.getElementById('next-challenge-btn').addEventListener('click', () => {
+                currentChallengeIndex++;
+                if (currentChallengeIndex < codeQuizzes[currentQuizType].length) {
+                    loadChallenge();
+                } else {
+                    // Quiz completed
+                    document.getElementById('code-quiz').style.display = 'none';
+                    document.getElementById('quiz-selection').style.display = 'block';
+                    document.getElementById('quiz-selection').innerHTML = `
+                        <h3>Quiz completed! Score: ${score}/${codeQuizzes[currentQuizType].length}</h3>
+                        <button onclick="location.reload()" class="quiz-select-btn">Take Another Quiz</button>
+                    `;
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

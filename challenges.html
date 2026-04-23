@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLabs | Coding Challenges</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo-link"><h1>DevLabs</h1></a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Challenges</h3>
+            <div id="challenge-list"></div>
+        </div>
+
+        <!-- Editor & Preview -->
+        <div class="editor-section">
+            <div class="header">
+                <h3>Code Editor</h3>
+                <div>
+                    <button id="run-btn">Run Code</button>
+                    <button id="hint-btn">Get Hint</button>
+                </div>
+            </div>
+            <textarea id="code-editor" placeholder="Write your code here..."></textarea>
+            <div id="error-output"></div>
+        </div>
+
+        <div class="preview-section">
+            <div class="header">
+                <h3 id="current-task">Select a challenge to begin</h3>
+            </div>
+            <div id="output-window"></div>
+        </div>
+    </div>
+
+    <script>
+        // Challenges data
+        const challenges = [
+            {
+                title: "Hello World HTML",
+                type: "html",
+                task: "Create an <h1> tag that says 'Hello World'",
+                hint: "Use &lt;h1&gt;Hello World&lt;/h1&gt;",
+                solution: (code) => code.includes('<h1>') && code.includes('Hello World') && code.includes('</h1>')
+            },
+            {
+                title: "The Blue Button",
+                type: "html",
+                task: "Create a <button> with the text 'Click Me' and set its style to blue.",
+                hint: "Use &lt;button style=\"background-color: blue;\"&gt;Click Me&lt;/button&gt;",
+                solution: (code) => code.includes('<button') && code.includes('Click Me') && code.includes('blue')
+            },
+            {
+                title: "Image Add",
+                type: "html",
+                task: "Add an <img> tag with any source URL.",
+                hint: "Use &lt;img src=\"https://example.com/image.jpg\" alt=\"Description\"&gt;",
+                solution: (code) => code.includes('<img') && code.includes('src=')
+            },
+            {
+                title: "Paragraph and Link",
+                type: "html",
+                task: "Create a paragraph with text and a link inside it.",
+                hint: "Use &lt;p&gt;Text &lt;a href=\"url\"&gt;link&lt;/a&gt;&lt;/p&gt;",
+                solution: (code) => code.includes('<p>') && code.includes('<a') && code.includes('href=')
+            },
+            {
+                title: "Hello World JS",
+                type: "js",
+                task: "Write code to log 'Hello World' to the console.",
+                hint: "Use console.log('Hello World');",
+                solution: (code) => code.includes("console.log('Hello World')") || code.includes('console.log("Hello World")')
+            },
+            {
+                title: "Variable Declaration",
+                type: "js",
+                task: "Declare a variable 'name' with value 'John'.",
+                hint: "Use let name = 'John';",
+                solution: (code) => code.includes("let name = 'John'") || code.includes('let name = "John"')
+            },
+            {
+                title: "Simple Function",
+                type: "js",
+                task: "Create a function that returns 'Hello'.",
+                hint: "function hello() { return 'Hello'; }",
+                solution: (code) => code.includes('function') && code.includes('return') && (code.includes("'Hello'") || code.includes('"Hello"'))
+            },
+            {
+                title: "Array Creation",
+                type: "js",
+                task: "Create an array with numbers 1, 2, 3.",
+                hint: "let arr = [1, 2, 3];",
+                solution: (code) => code.includes('[1, 2, 3]')
+            },
+            {
+                title: "Object Creation",
+                type: "js",
+                task: "Create an object with name and age properties.",
+                hint: "let person = {name: 'John', age: 25};",
+                solution: (code) => code.includes('{') && code.includes('name:') && code.includes('age:')
+            },
+            {
+                title: "DOM Selection",
+                type: "js",
+                task: "Select an element with id 'myDiv' and change its text.",
+                hint: "document.getElementById('myDiv').textContent = 'New text';",
+                solution: (code) => code.includes("getElementById('myDiv')") && code.includes('textContent')
+            }
+        ];
+
+        let currentChallengeIndex = null;
+
+        // Initialize challenges
+        document.addEventListener('DOMContentLoaded', () => {
+            const challengeList = document.getElementById('challenge-list');
+            const editor = document.getElementById('code-editor');
+            const outputWindow = document.getElementById('output-window');
+            const errorOutput = document.getElementById('error-output');
+            const runBtn = document.getElementById('run-btn');
+            const hintBtn = document.getElementById('hint-btn');
+            const taskTitle = document.getElementById('current-task');
+
+            // Initialize Challenges
+            challenges.forEach((ch, index) => {
+                const div = document.createElement('div');
+                div.classList.add('challenge-item');
+                div.innerText = `${index + 1}. ${ch.title}`;
+                div.onclick = () => loadChallenge(index);
+                challengeList.appendChild(div);
+            });
+
+            function loadChallenge(index) {
+                currentChallengeIndex = index;
+                const ch = challenges[index];
+                taskTitle.innerText = ch.task;
+                editor.value = ""; // Clear editor
+                outputWindow.innerHTML = ""; // Clear output
+                errorOutput.innerHTML = ""; // Clear errors
+
+                // UI Visual update
+                document.querySelectorAll('.challenge-item').forEach(el => el.classList.remove('active'));
+                challengeList.children[index].classList.add('active');
+            }
+
+            // Run code
+            runBtn.addEventListener('click', () => {
+                const code = editor.value;
+                const ch = challenges[currentChallengeIndex];
+
+                if (ch.type === 'html') {
+                    // For HTML, display in output as HTML
+                    outputWindow.innerHTML = `<div style="border: 1px solid #333; padding: 10px; background: white; color: black;">${code}</div>`;
+                } else if (ch.type === 'js') {
+                    // For JS, execute and show output/errors
+                    try {
+                        // Clear previous
+                        outputWindow.innerHTML = "";
+                        errorOutput.innerHTML = "";
+
+                        // Capture console.log
+                        let logs = [];
+                        const originalLog = console.log;
+                        console.log = (...args) => {
+                            logs.push(args.join(' '));
+                            originalLog(...args);
+                        };
+
+                        // Execute code
+                        const result = eval(code);
+
+                        // Restore console.log
+                        console.log = originalLog;
+
+                        // Display logs or execution confirmation
+                        if (logs.length > 0) {
+                            outputWindow.innerHTML = logs.join('<br>');
+                        } else {
+                            outputWindow.innerHTML = '✅ Code executed successfully!';
+                            if (result !== undefined) {
+                                outputWindow.innerHTML += `<br>Result: ${result}`;
+                            }
+                        }
+                    } catch (error) {
+                        errorOutput.innerHTML = `❌ Error: ${error.message}`;
+                    }
+                }
+
+                // Check solution
+                if (ch.solution(code)) {
+                    outputWindow.innerHTML += '<br><br>✅ Correct! Well done!';
+                } else {
+                    errorOutput.innerHTML += '<br>❌ Not quite right. Try again!';
+                }
+            });
+
+            // Hint button
+            hintBtn.addEventListener('click', () => {
+                if (currentChallengeIndex !== null) {
+                    alert(challenges[currentChallengeIndex].hint);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
