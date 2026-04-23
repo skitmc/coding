@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLabs: Interactive Learning</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <h2>Challenges</h2>
+            <div id="challenge-list"></div>
+            <div class="stats">
+                Score: <span id="score">0</span>
+            </div>
+        </aside>
+
+        <main class="editor-section">
+            <div class="header">
+                <h3 id="current-task">Select a challenge to start!</h3>
+                <button id="run-btn">Run Code</button>
+            </div>
+            <textarea id="code-editor" spellcheck="false" placeholder="Write your HTML here..."></textarea>
+        </main>
+
+        <section class="preview-section">
+            <div class="header"><h3>Live Preview</h3></div>
+            <iframe id="preview-window"></iframe>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
